@@ -11,8 +11,10 @@ parser.add_argument('input_image', metavar='Image', type=Path,
                     help='The Image to Dye')
 parser.add_argument('color', metavar='Color', type=str,
                     help='The color to dye the image')
-parser.add_argument('-o', "--output", default = "generated.png",
+parser.add_argument('-o', "--output", default="generated.png",
                     help='Output the image')
+parser.add_argument("--opacity", default=0.7, type=float,
+                    help='Opacity for the blend mode')
 
 args = parser.parse_args()
 
@@ -23,7 +25,7 @@ GENERATED = Path("./Generated")
 if not GENERATED.exists():
     GENERATED.mkdir()
 
-def MainProgram(input_image, color, output_image):
+def MainProgram(input_image, color, output_image, opacity):
     UniqueID = uuid.uuid4().hex
     ImgSaveFilename = (GENERATED/UniqueID).with_suffix(input_image.suffix)
 
@@ -35,23 +37,23 @@ def MainProgram(input_image, color, output_image):
         if ColorRGB is None:
             raise KeyError
 
-        OutFilename = ProcessImage(ImgSaveFilename, ColorRGB)
+        OutFilename = ProcessImage(ImgSaveFilename, ColorRGB, opacity)
         copyfile(str(OutFilename), output_image)
 
     except Exception as e:
         print("Program terminated due to")
         print(e)
 
-def ProcessImage(ImageFileName, Color):
+def ProcessImage(ImageFileName, Color, opacity):
     # Pass through Neuro
-    OutMask = NeuralModel.Forward(ImageFileName)
+    OutMask = NeuralModel.Forward(ImageFileName, Color)
     OutFileName = ImageFileName.with_name(str(ImageFileName.stem) + "Processed.png")
 
     # Color
-    Soft_Light.ChangeColor(str(ImageFileName), str(OutMask), Color, str(OutFileName), gamma=1.5)
+    Soft_Light.ChangeColor(str(ImageFileName), str(OutMask), str(OutFileName), opacity)
 
     return OutFileName
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    MainProgram(args.input_image, args.color, args.output)
+    MainProgram(args.input_image, args.color, args.output, args.opacity)

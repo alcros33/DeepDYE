@@ -1,42 +1,30 @@
 from PIL import Image
-import torchvision.utils as utils
 from torchvision import transforms
 import torch
 import numpy as np
-import cv2
-from pathlib import Path
+import fastai.vision as fv
+import fastai.basics as fai
 
-def Unsqueezer(img):
-    return img.unsqueeze(0)
+to_pil = transforms.ToPILImage()
+Learn = fai.load_learner("./Models", "HairLearner.pkl")
 
-Tfms = [transforms.Resize((500, 500)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225]),
-        Unsqueezer]
+def Forward(inputImgName: str, Color):
+    outputImgName = inputImgName.with_name(str(inputImgName.stem) + "-seg.png")
 
-ImageTransforms = transforms.Compose(Tfms)
+    Img = fv.open_image(inputImgName)
+    originalSize = Img.size
+    Img = Img.resize(500)
+    Res = Learn.predict(Img)[0]
 
-Model = torch.load("Models/BestModel.pth")
-Model.eval()
+    # Colorization
+    Mask = (Res.data == 255)
+    R, G, B, A = [torch.zeros((1, 500, 500), dtype=torch.uint8) for _ in range(4)]
+    R[Mask], G[Mask], B[Mask] = Color
+    A[Mask] = 255
+    ColorMask = fv.Image(torch.cat([R, G, B, A]))
 
+    Pil_Img = to_pil(ColorMask.data.detach().cpu().type(torch.ByteTensor))
+    Pil_Img = Pil_Img.resize(originalSize[::-1])
+    Pil_Img.save(outputImgName)
 
-def Forward(inputImgName: str):
-    with torch.no_grad():
-        outputImgName = inputImgName.with_name(str(inputImgName.stem) + "-seg.pbm")
-
-        img = Image.open(inputImgName)
-        img_size = img.size
-
-        img = ImageTransforms(img).cuda()
-
-        res = torch.sigmoid(Model(img))
-        res = res.argmax(dim=1)
-
-        to_pil = transforms.ToPILImage()
-        p_img = to_pil(res.detach().cpu().type(torch.ByteTensor))
-
-        p_img = p_img.resize(img_size)
-        p_img.save(outputImgName)
-
-        return outputImgName
+    return outputImgName

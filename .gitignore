@@ -127,3 +127,4 @@ Generated/
 .directory
 .vscode/
 *.pth
+*.pkl

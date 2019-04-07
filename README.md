@@ -26,7 +26,7 @@ pip install fastai
 ```
 4. Download the model and place it inside the folder `Models`
 
-[https://drive.google.com/open?id=1NkSFZYg49FtMmRWFJEckrI12jf7Z-rKF](https://drive.google.com/open?id=1NkSFZYg49FtMmRWFJEckrI12jf7Z-rKF)
+[https://drive.google.com/open?id=10AfHydtWC1rtEyvjyMR9ue02aBsQU5Vv](https://drive.google.com/open?id=10AfHydtWC1rtEyvjyMR9ue02aBsQU5Vv)
 
 ##  Usage
 ```
@@ -39,4 +39,5 @@ python DeepDYE.py Image.jpg [red|green|blue|pink] -o ImageOut.png
 
 
 ## Train it yourself
-Pending....
+
+You can train the model yourself by following the steps on the jupyter notebook included in the repo. [HairSeg.ipynb](HairSeg.ipynb)
