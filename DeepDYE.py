@@ -33,9 +33,7 @@ def MainProgram(input_image, color, output_image, opacity):
         Img = PIL.Image.open(input_image)
         Img.save(ImgSaveFilename)
 
-        ColorRGB = COLORES.get(color, None) 
-        if ColorRGB is None:
-            raise KeyError
+        ColorRGB = COLORES[color]
 
         OutFilename = ProcessImage(ImgSaveFilename, ColorRGB, opacity)
         copyfile(str(OutFilename), output_image)
